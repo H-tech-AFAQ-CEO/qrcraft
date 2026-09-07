@@ -23,6 +23,7 @@ import {
   Upload,
   UserRound,
   Wifi,
+  Image as ImageIcon,
   X,
   Zap,
 } from 'lucide-react'
@@ -141,7 +142,7 @@ export default function Page() {
 
       <section id="faq" className="faq-section section-shell"><div className="section-intro"><span className="kicker">FAQ</span><h2>Good questions.<br /><span>Clear answers.</span></h2></div><div className="faq-list">{[['Is QRCraft AI really free?', 'Yes. QRCraft AI is free to use, with no sign-up, hidden limits, or surprise paywalls.'], ['Do QR codes expire?', 'No. The QR code itself never expires. As long as the destination link works, your code will keep working.'], ['What formats can I download?', 'Download your code as a crisp PNG or infinitely scalable SVG, perfect for print or digital use.']].map(([question, answer]) => <details key={question}><summary>{question}<ChevronDown size={18} /></summary><p>{answer}</p></details>)}</div></section>
 
-      <section className="founder-section section-shell"><div className="founder-avatar">AA</div><div><span className="kicker">BUILT WITH CARE</span><h2>“The best tools<br />get out of your way.”</h2><p>QRCraft AI is made by <strong>Afaq Ahmad</strong>, Founder & Developer. A tiny, focused tool for making the internet a little more connected.</p></div><a href="#top" className="icon-link" aria-label="Back to top"><ArrowRight size={20} /></a></section>
+      <section className="founder-section section-shell"><div className="founder-avatar"><img src="/afaq-ahmad.jpeg" alt="Afaq Ahmad, founder and developer of QRCraft AI" /></div><div><span className="kicker">BUILT WITH CARE</span><h2>“The best tools<br />get out of your way.”</h2><p>QRCraft AI is made by <strong>Afaq Ahmad</strong>, Founder & Developer. A tiny, focused tool for making the internet a little more connected.</p><div className="founder-meta"><ImageIcon size={14} /> Developer of QRCraft AI</div></div><a href="#top" className="icon-link" aria-label="Back to top"><ArrowRight size={20} /></a></section>
 
       <footer className="site-footer section-shell"><a className="brand" href="#top"><span className="brand-icon"><QrCode size={18} /></span><span>QRCraft <em>AI</em></span></a><p>Simple QR codes for a connected world.</p><div><a href="#features">Features</a><a href="#faq">FAQ</a><a href="#top">Privacy</a></div><span className="copyright">© 2026 QRCraft AI</span></footer>
     </main>
