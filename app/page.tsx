@@ -1,6 +1,7 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import QRCode from 'qrcode'
 import {
   ArrowRight,
   Check,
@@ -26,30 +27,6 @@ import {
   Zap,
 } from 'lucide-react'
 
-const qrCells = [
-  '111111100100101111111',
-  '100000101101001000001',
-  '101110101011101011101',
-  '101110100110001011101',
-  '101110101111101011101',
-  '100000100101001000001',
-  '111111101010101111111',
-  '000000001101100000000',
-  '110110111011011101101',
-  '001011001100110010010',
-  '101101111011101111011',
-  '011001001110010011100',
-  '110111110011111101101',
-  '000000001101011000000',
-  '111111101011101111111',
-  '100000101110001000001',
-  '101110101011101011101',
-  '101110100101101011101',
-  '101110101110101011101',
-  '100000101001101000001',
-  '111111101110101111111',
-]
-
 const useCases = [
   { icon: Globe2, label: 'Website links', text: 'Share a landing page or product.' },
   { icon: Wifi, label: 'WiFi credentials', text: 'Make joining your network effortless.' },
@@ -59,21 +36,21 @@ const useCases = [
   { icon: Heart, label: 'Social profiles', text: 'Grow your audience offline.' },
 ]
 
-function QRPreview({ foreground, background, rounded }: { foreground: string; background: string; rounded: boolean }) {
-  return (
-    <div className="qr-art" style={{ backgroundColor: background, color: foreground }} aria-label="QR code preview" role="img">
-      {qrCells.map((row, rowIndex) =>
-        [...row].map((cell, cellIndex) => (
-          <span
-            key={`${rowIndex}-${cellIndex}`}
-            className={cell === '1' ? 'qr-cell' : 'qr-cell qr-empty'}
-            style={{ borderRadius: rounded && cell === '1' ? '3px' : '0' }}
-          />
-        )),
-      )}
-      <div className="qr-center-mark">Q</div>
-    </div>
-  )
+function QRPreview({ content, foreground, background }: { content: string; foreground: string; background: string }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    QRCode.toCanvas(canvas, content || ' ', {
+      errorCorrectionLevel: 'H',
+      margin: 2,
+      width: 280,
+      color: { dark: foreground, light: background },
+    })
+  }, [content, foreground, background])
+
+  return <canvas ref={canvasRef} className="qr-art qr-canvas" aria-label={`QR code for ${content || 'empty content'}`} role="img" />
 }
 
 function AdSlot({ id, className = '' }: { id: string; className?: string }) {
@@ -90,6 +67,28 @@ export default function Page() {
   const [copied, setCopied] = useState(false)
 
   const helperText = useMemo(() => content.length > 0 ? 'Your QR code updates as you type.' : 'Add a link, text, or anything you want to share.', [content])
+
+  const downloadQr = async (kind: 'png' | 'svg') => {
+    const value = content || ' '
+    if (kind === 'png') {
+      const dataUrl = await QRCode.toDataURL(value, { errorCorrectionLevel: 'H', margin: 2, width: 1200, color: { dark: foreground, light: background } })
+      const link = document.createElement('a')
+      link.href = dataUrl
+      link.download = 'qrcraft-code.png'
+      link.click()
+      setFormat('PNG')
+    } else {
+      const svg = await QRCode.toString(value, { type: 'svg', errorCorrectionLevel: 'H', margin: 2, width: 1200, color: { dark: foreground, light: background } })
+      const link = document.createElement('a')
+      link.href = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }))
+      link.download = 'qrcraft-code.svg'
+      link.click()
+      URL.revokeObjectURL(link.href)
+      setFormat('SVG')
+    }
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1800)
+  }
 
   return (
     <main className="min-h-screen overflow-hidden bg-[#07111f] text-white">
@@ -126,8 +125,8 @@ export default function Page() {
           </section>
           <section className="preview-card glass-card">
             <div className="preview-top"><span className="kicker">PREVIEW</span><span className="format-label"><FileImage size={15} /> {format}</span></div>
-            <div className="qr-stage"><QRPreview foreground={foreground} background={background} rounded={style === 'rounded'} /></div>
-            <div className="preview-footer"><div><strong>Ready to scan</strong><span>High-resolution output</span></div><div className="download-actions"><button className="download-secondary" onClick={() => setFormat('SVG')}><FileJson size={16} /> SVG</button><button className="download-primary" onClick={() => { setFormat('PNG'); setCopied(true); setTimeout(() => setCopied(false), 1800) }}><Download size={16} /> {copied ? 'Saved' : 'Download PNG'}</button></div></div>
+            <div className="qr-stage"><QRPreview content={content} foreground={foreground} background={background} /></div>
+            <div className="preview-footer"><div><strong>Ready to scan</strong><span>High-resolution output</span></div><div className="download-actions"><button className="download-secondary" onClick={() => downloadQr('svg')}><FileJson size={16} /> SVG</button><button className="download-primary" onClick={() => downloadQr('png')}><Download size={16} /> {copied ? 'Saved' : 'Download PNG'}</button></div></div>
           </section>
           <AdSlot id="ad-slot-1" className="side-ad" />
         </div>
